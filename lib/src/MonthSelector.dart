@@ -13,6 +13,7 @@ class MonthSelector extends StatefulWidget {
   final PublishSubject<UpDownButtonEnableState>
       upDownButtonEnableStatePublishSubject;
   final Locale? locale;
+  final bool Function(DateTime)? selectableMonthPredicate;
   const MonthSelector({
     Key? key,
     required DateTime this.openDate,
@@ -23,12 +24,14 @@ class MonthSelector extends StatefulWidget {
     this.firstDate,
     this.lastDate,
     this.locale,
+    this.selectableMonthPredicate,
   })  : assert(openDate != null),
         assert(selectedDate != null),
         assert(onMonthSelected != null),
         assert(upDownPageLimitPublishSubject != null),
         assert(upDownButtonEnableStatePublishSubject != null),
         super(key: key);
+
   @override
   State<StatefulWidget> createState() => MonthSelectorState();
 }
@@ -141,9 +144,9 @@ class MonthSelectorState extends State<MonthSelector> {
   }
 
   bool _isEnabled(final DateTime date) {
-    if (widget.firstDate == null && widget.lastDate == null)
-      return true;
-    else if (widget.firstDate != null &&
+    if (widget.firstDate == null && widget.lastDate == null) {
+      return holdsSelectionPredicate(date);
+    } else if (widget.firstDate != null &&
         widget.lastDate != null &&
         widget.firstDate!.compareTo(date) <= 0 &&
         widget.lastDate!.compareTo(date) >= 0)
@@ -158,6 +161,14 @@ class MonthSelectorState extends State<MonthSelector> {
       return true;
     else
       return false;
+  }
+
+  bool holdsSelectionPredicate(DateTime date) {
+    if (widget.selectableMonthPredicate != null) {
+      return widget.selectableMonthPredicate!(date);
+    } else {
+      return true;
+    }
   }
 
   void goDown() {
